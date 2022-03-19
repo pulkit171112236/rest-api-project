@@ -30,6 +30,16 @@ app.use('/images', express.static(path.join(APP_HOME, 'images')))
 // serving routes
 app.use('/feed', feedRoutes)
 
+// handling errors
+app.use((error, req, res, next) => {
+  console.log('---error---\n', error)
+  const status = error.statusCode || 500
+  const message = error.message
+  return res.status(status).json({
+    message: message,
+  })
+})
+
 // database connection and start server
 mongoose
   .connect(
