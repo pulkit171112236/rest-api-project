@@ -1,13 +1,19 @@
+// import node-inbuilt-packages
+const path = require('path')
+
+// import user-installed packages
 const express = require('express')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 
-const app = express()
-
-app.use(bodyParser.json())
-
+// file-imports
+const { APP_HOME } = require('./utils/path')
 const feedRoutes = require('./routes/feed')
 
+// declare variables and methods
+const app = express()
+
+// setting access-control serverside
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, PUT, PATCH')
@@ -15,8 +21,16 @@ app.use((req, res, next) => {
   next()
 })
 
+// parsing body-content
+app.use(bodyParser.json())
+
+// serving static images
+app.use('/images', express.static(path.join(APP_HOME, 'images')))
+
+// serving routes
 app.use('/feed', feedRoutes)
 
+// database connection and start server
 mongoose
   .connect(
     'mongodb+srv://pulkit:5tEvPesz6qA3izWh@cluster0.qgwii.mongodb.net/restApi?retryWrites=true&w=majority'
