@@ -2,7 +2,7 @@ const feedController = require('../controllers/feed')
 
 const router = require('express').Router()
 
-router.get('/', feedController.getPosts)
+router.get('/posts', feedController.getPosts)
 
 router.post('/post', feedController.createPost)
 
