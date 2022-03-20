@@ -7,7 +7,7 @@ exports.getPosts = (req, res, next) => {
     .then((posts) => {
       if (!posts) {
         const err = new Error('No posts found')
-        err.statusCode = 404
+        err.statusCode = 422
         throw err
       }
       return res.status(200).json({
@@ -62,10 +62,12 @@ exports.createPost = (req, res, next) => {
   }
   const title = req.body.title
   const content = req.body.content
+  const imageUrl = req.file.path
   const post = new Post({
     title: title,
     content: content,
     creator: { name: 'pulkit' },
+    imageUrl: imageUrl,
   })
   post
     .save()

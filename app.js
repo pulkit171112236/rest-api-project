@@ -5,6 +5,7 @@ const path = require('path')
 const express = require('express')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
+const multer = require('multer')
 
 // file-imports
 const { APP_HOME } = require('./utils/path')
@@ -12,6 +13,24 @@ const feedRoutes = require('./routes/feed')
 
 // declare variables and methods
 const app = express()
+const fileStorage = multer.diskStorage({
+  filename: (req, file, cb) => {
+    const fileName = new Date().toISOString() + '-' + file.originalname
+    cb(null, fileName)
+  },
+  destination: (req, file, cb) => {
+    cb(null, 'images')
+  },
+})
+const fileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/jpeg'
+  ) {
+    cb(null, true)
+  } else cb(null, false)
+}
 
 // setting access-control serverside
 app.use((req, res, next) => {
@@ -26,6 +45,11 @@ app.use(bodyParser.json())
 
 // serving static images
 app.use('/images', express.static(path.join(APP_HOME, 'images')))
+
+// process file using multer middleware
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
+)
 
 // serving routes
 app.use('/feed', feedRoutes)
