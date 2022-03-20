@@ -3,36 +3,35 @@ const { validationResult } = require('express-validator')
 const fileUtils = require('../utils/file')
 const Post = require('../models/post')
 
+const ITEMS_PER_PAGE = 2
+
 exports.getPosts = (req, res, next) => {
+  const currPage = req.query.page || 1
+  let totalItems
   Post.find()
+    .count()
+    .then((result) => {
+      totalItems = result
+      return Post.find()
+        .skip(ITEMS_PER_PAGE * (currPage - 1))
+        .limit(ITEMS_PER_PAGE)
+    })
     .then((posts) => {
       if (!posts) {
         const err = new Error('No posts found')
-        err.statusCode = 422
+        err.statusCode = 404
         throw err
       }
       return res.status(200).json({
         posts: posts,
         message: 'success',
+        totalItems: totalItems,
       })
     })
     .catch((err) => {
       if (!err.statusCode) err.statusCode = 500
       next(err)
     })
-  // return res.status(200).json({
-  //   posts: [
-  //     {
-  //       _id: '1',
-  //       content: 'dlfjo',
-  //       title: 'this is the title of first post',
-  //       creator: { name: 'pulkit' },
-  //       imageUrl: `https://www.computerhope.com/jargon/j/javascript.png`,
-  //       createdAt: new Date(),
-  //       imageUrl: 'oidjfo',
-  //     },
-  //   ],
-  // })
 }
 
 exports.getPost = (req, res, next) => {
