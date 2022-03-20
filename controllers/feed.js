@@ -123,3 +123,26 @@ exports.updatePost = (req, res, next) => {
       next(err)
     })
 }
+
+exports.deletePost = (req, res, next) => {
+  const postId = req.params.postId
+  Post.findById(postId)
+    .then((post) => {
+      if (!post) {
+        const err = new Error('post does not exists')
+        err.statusCode = 404
+        throw err
+      }
+      // check post created by user
+      fileUtils.deleteFile(post.imageUrl)
+      return Post.findByIdAndRemove(postId)
+    })
+    .then((result) => {
+      console.log('result', result)
+      res.status(200).json({ message: 'Deleted' })
+    })
+    .catch((err) => {
+      if (!err.statusCode) err.statusCode = 500
+      next(err)
+    })
+}
