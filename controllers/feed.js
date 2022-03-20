@@ -101,8 +101,6 @@ exports.updatePost = (req, res, next) => {
         throw err
       }
       // update the post object
-      post.title = req.body.title
-      post.content = req.body.content
       if (req.file) {
         // deleting file is asynchronous
         fileUtils.deleteFile(post.imageUrl).catch((err) => {
@@ -110,6 +108,8 @@ exports.updatePost = (req, res, next) => {
         })
         post.imageUrl = req.file.path
       }
+      post.title = req.body.title
+      post.content = req.body.content
       return post.save()
     })
     .then((post) => {
