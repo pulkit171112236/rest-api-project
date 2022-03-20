@@ -10,6 +10,7 @@ const multer = require('multer')
 // file-imports
 const { APP_HOME } = require('./utils/path')
 const feedRoutes = require('./routes/feed')
+const authRoutes = require('./routes/auth')
 
 // declare variables and methods
 const app = express()
@@ -53,6 +54,7 @@ app.use(
 
 // serving routes
 app.use('/feed', feedRoutes)
+app.use('/auth', authRoutes)
 
 // handling errors
 app.use((error, req, res, next) => {
@@ -61,6 +63,7 @@ app.use((error, req, res, next) => {
   const message = error.message
   return res.status(status).json({
     message: message,
+    data: error.data,
   })
 })
 
