@@ -7,15 +7,17 @@ const authController = require('../controllers/auth')
 router.post(
   '/signup',
   [
-    body('email').isEmail().withMessage('Not a valid email').normalizeEmail(),
-    // .custom((value, { req }) => {
-    //   return User.find({ email: value }).then((user) => {
-    //     console.log(user)
-    //     if (user) {
-    //       Promise.reject('User already exists')
-    //     }
-    //   })
-    // }),
+    body('email')
+      .isEmail()
+      .withMessage('Not a valid email')
+      .normalizeEmail()
+      .custom((value, { req }) => {
+        return User.findOne({ email: value }).then((user) => {
+          if (user) {
+            return Promise.reject('User already exists')
+          }
+        })
+      }),
     body('password').trim().isLength({ min: 5 }),
     body('name').trim().notEmpty(),
   ],
