@@ -24,6 +24,12 @@ router.post(
   authController.createUser
 )
 
+router.post(
+  '/login',
+  [body('email').isEmail(), body('password').isLength({ min: 5 })],
+  authController.postLogin
+)
+
 router.get('/test', authController.test)
 
 module.exports = router

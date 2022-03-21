@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator')
 
 const fileUtils = require('../utils/file')
 const Post = require('../models/post')
+const User = require('../models/user')
 
 const ITEMS_PER_PAGE = 2
 
@@ -66,16 +67,26 @@ exports.createPost = (req, res, next) => {
   const post = new Post({
     title: title,
     content: content,
-    creator: { name: 'pulkit' },
+    creator: req.userId,
     imageUrl: imageUrl,
   })
+  let creator
   post
     .save()
+    .then((post) => {
+      return User.findById(req.userId)
+    })
+    .then((user) => {
+      creator = user
+      user.posts.push(post)
+      return user.save()
+    })
     .then((result) => {
       console.log('--result:', result)
       return res.status(201).json({
         message: 'Post created',
         post: post,
+        creator: { id: creator._id.toString(), name: creator.name },
       })
     })
     .catch((err) => {
@@ -97,6 +108,11 @@ exports.updatePost = (req, res, next) => {
       if (!post) {
         const err = new Error('post does not exists')
         err.statusCode = 404
+        throw err
+      }
+      if (post.creator.toString() !== req.userId) {
+        const err = new Error('Not authorized')
+        err.statusCode = 403
         throw err
       }
       // update the post object
@@ -132,12 +148,24 @@ exports.deletePost = (req, res, next) => {
         err.statusCode = 404
         throw err
       }
-      // check post created by user
+      var a = post.creator.toString()
+      var b = req.userId
+      if (post.creator.toString() !== req.userId) {
+        const err = new Error('Not authorized')
+        err.statusCode = 403
+        throw err
+      }
       fileUtils.deleteFile(post.imageUrl)
       return Post.findByIdAndRemove(postId)
     })
     .then((result) => {
-      console.log('result', result)
+      return User.findById(req.userId)
+    })
+    .then((user) => {
+      user.posts.pull(postId)
+      return user.save()
+    })
+    .then((result) => {
       res.status(200).json({ message: 'Deleted' })
     })
     .catch((err) => {
